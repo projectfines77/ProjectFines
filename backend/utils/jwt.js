@@ -13,7 +13,7 @@ const attachCookiesToResponse = ({ res, police, refreshToken }) => {
 
   const oneDay = 1000 * 60 * 60 * 24;
   const longerExp = 1000 * 60 * 60 * 24 * 30;
-
+  
   res.cookie('accessToken', accessTokenJWT, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

@@ -38,7 +38,7 @@ const quickPermissionsCheck = (...roles) => {
     console.log(req.police);
     if (!roles.includes(req.police.role)) {
       throw new CustomError.UnauthorizedError(
-        'Unauthorized to access this route'
+        'Unauthorized to access this route quick'
       );
     }
     next();
