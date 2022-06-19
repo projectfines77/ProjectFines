@@ -35,7 +35,6 @@ const authenticateUser = async (req, res, next) => {
 
 const quickPermissionsCheck = (...roles) => {
   return (req, res, next) => {
-    console.log(req.police);
     if (!roles.includes(req.police.role)) {
       throw new CustomError.UnauthorizedError(
         'Unauthorized to access this route quick'

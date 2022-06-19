@@ -75,7 +75,6 @@ const showOneStaff = async (req,res) => {
 
 const showMe = async (req,res) => {
     const {policeMongoID} = req.police
-    console.log(req.police);
     const findMe = await Police.findOne({_id:policeMongoID})
     const message = {badgenumber: findMe.badgenumber, role: findMe.role, forDebugging: req.police}
     res.status(StatusCodes.OK).json(message);
