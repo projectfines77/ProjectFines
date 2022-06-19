@@ -54,6 +54,9 @@ const register = async (req,res) =>{ //assumes "role" is selectable - not self w
 }
 
 const loginHistory = async (req,res) =>{
+    if(req.police.badgenumber != req.body.badgenumber){
+        throw new CustomErrors.UnauthorizedError(`Unauthenticated`)
+    }
     const {badgenumber} = req.body
     const findPolice = await Police.findOne({badgenumber:badgenumber})
     if(!findPolice){
@@ -106,6 +109,20 @@ const updateStaffPassword = async (req, res) => {
     police.password = newPassword;
     await police.save();
     res.status(StatusCodes.OK).json({ msg: 'Success! Password Updated.' });
-  };
+};
 
-module.exports = {login,register,loginHistory,showAllStaff,showMe,showOneStaff,updateStaffNotPassword, updateStaffPassword}
+const logout = async (req, res) => {
+    await Token.findOneAndDelete({ policeMongoID: req.police.policeMongoID });
+
+    res.cookie('accessToken', 'logout', {
+        httpOnly: true,
+        expires: new Date(Date.now()),
+    });
+    res.cookie('refreshToken', 'logout', {
+        httpOnly: true,
+        expires: new Date(Date.now()),
+    });
+    res.status(StatusCodes.OK).json({ msg: 'Succesfully logged out!' });
+};
+
+module.exports = {login,register,loginHistory,showAllStaff,showMe,showOneStaff,updateStaffNotPassword, updateStaffPassword,logout}
