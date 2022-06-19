@@ -14,12 +14,23 @@ const helmet = require('helmet');
 const xss = require('xss-clean');
 const cors = require('cors');
 const mongoSanitize = require('express-mongo-sanitize');
+const fileUpload = require('express-fileupload');
 
 // database
 const connectDB = require('./db/connect');
 
+//images
+const cloudinary = require('cloudinary').v2;
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
+app.use(fileUpload({ useTempFiles: true }));
+
 //import routers
 const administrative = require('./routers/policeRouter')
+const offense = require('./routers/offenseRouter')
 
 // middleware
 const notFoundMiddleware = require('./middleware/not-found');
@@ -43,9 +54,9 @@ app.use(mongoSanitize());
 
 app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
-app.use(fileUpload());
 
 //use routers
+app.use('/api/v1',offense)
 app.use('/',administrative)
 
 app.use(notFoundMiddleware);
