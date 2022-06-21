@@ -125,7 +125,7 @@ const showMyTicketingHistory = async (req,res) => {
 
 const showStaffTicketingHistory = async (req,res) => {
     const police = await Police.findOne({_id:req.params.id})
-    console.log(police);
+    let history = []
     for(const ticket of police.ticketingHistory){
         const offense = await Offense.findOne({_id:ticket})
         history.push(offense)
