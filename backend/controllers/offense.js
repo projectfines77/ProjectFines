@@ -11,22 +11,22 @@ const getImages = async (req,res) => {
     res.status(StatusCodes.OK).json(car.imagesOfThisCar)
 }
 
-// const uploadImage = async (req, res) => {
-//     const result = await cloudinary.uploader.upload(
-//       req.files.image.tempFilePath,
-//       {
-//         use_filename: true,
-//         folder: 'offenses',
-//       }
-//     );
-//     fs.unlinkSync(req.files.image.tempFilePath);
-//     return res.status(StatusCodes.OK).json( result.secure_url );
-//   };
+const uploadImage = async (req, res) => {
+    const result = await cloudinary.uploader.upload(
+      req.files.image.tempFilePath,
+      {
+        use_filename: true,
+        folder: 'offenses',
+      }
+    );
+    console.log(req.files.image.tempFilePath);
+    fs.unlinkSync(req.files.image.tempFilePath);
+    return res.status(StatusCodes.OK).json( result.secure_url );
+};
 
 const createOffense = async (req,res) => {
     const {offenseType, carPlate} = req.body
-
     res.status(StatusCodes.CREATED).json('createOffense')
 }
 
-module.exports = {getImages,createOffense}
+module.exports = {getImages,createOffense,uploadImage}

@@ -30,6 +30,9 @@ const OffenseSchema = new mongoose.Schema({
     resolvedDateTime:{
         type: Date
     },
-})
+    notes:{
+        type:String
+    }
+}, {timestamps:true})
 
 module.exports = mongoose.model('Offense', OffenseSchema);
