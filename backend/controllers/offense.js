@@ -48,6 +48,8 @@ const createOffense = async (req, res) => {
   })
   linkToCar.offensesIncurred.push(offense._id)
   await linkToCar.save()
+  police.ticketingHistory.push(offense._id)
+  await police.save()
   res.status(StatusCodes.CREATED).json({ receipt: offense })
 }
 

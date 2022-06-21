@@ -20,10 +20,11 @@ const PoliceSchema = new mongoose.Schema({
     loginHistory:{
         type: [Date]
     },
-    // ticketingHistory:{
-    //     type: mongoose.Schema.ObjectID,
-    //     ref:'Ticket'
-    // }
+    ticketingHistory:{
+        type: [mongoose.Schema.ObjectID],
+        ref:'Offense',
+        default: []
+    }
 }, {timestamps:true})
 
 PoliceSchema.pre('save', async function () {

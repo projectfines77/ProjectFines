@@ -1,5 +1,6 @@
 const Police = require('../models/Police')
 const Token = require('../models/Token')
+const Offense = require('../models/Offense')
 const CustomErrors = require('../errors')
 const {StatusCodes} = require('http-status-codes')
 const crypto = require('crypto')
@@ -111,6 +112,27 @@ const updateStaffPassword = async (req, res) => {
     res.status(StatusCodes.OK).json({ msg: 'Success! Password Updated.' });
 };
 
+const showMyTicketingHistory = async (req,res) => {
+    const {policeMongoID} = req.police
+    const police = await Police.findOne({_id:policeMongoID})
+    let history = []
+    for(const ticket of police.ticketingHistory){
+        const offense = await Offense.findOne({_id:ticket})
+        history.push(offense)
+    }
+    res.status(StatusCodes.OK).json(history);
+}
+
+const showStaffTicketingHistory = async (req,res) => {
+    const police = await Police.findOne({_id:req.params.id})
+    console.log(police);
+    for(const ticket of police.ticketingHistory){
+        const offense = await Offense.findOne({_id:ticket})
+        history.push(offense)
+    }
+    res.status(StatusCodes.OK).json(history);
+}
+
 const logout = async (req, res) => {
     await Token.findOneAndDelete({ policeMongoID: req.police.policeMongoID });
 
@@ -125,4 +147,13 @@ const logout = async (req, res) => {
     res.status(StatusCodes.OK).json({ msg: 'Succesfully logged out!' });
 };
 
-module.exports = {login,register,loginHistory,showAllStaff,showMe,showOneStaff,updateStaffNotPassword, updateStaffPassword,logout}
+module.exports = {login,
+                register,
+                loginHistory,
+                showAllStaff,
+                showMe,showOneStaff,
+                updateStaffNotPassword, 
+                updateStaffPassword,
+                logout, 
+                showMyTicketingHistory,
+                showStaffTicketingHistory}
