@@ -1,5 +1,6 @@
 const Offense = require('../models/Offense')
 const Car = require('../models/Car')
+const Police = require('../models/Police')
 const CustomErrors = require('../errors')
 const {StatusCodes} = require('http-status-codes')
 const cloudinary = require('cloudinary').v2;
@@ -25,8 +26,20 @@ const uploadImage = async (req, res) => {
 };
 
 const createOffense = async (req,res) => {
-    const {offenseType, carPlate} = req.body
-    res.status(StatusCodes.CREATED).json('createOffense')
+    const {offenseType, carPlate, imageEvidence, notes} = req.body
+    console.log(req.police);
+    const police = await Police.findOne({_id:req.police.policeMongoID})
+    const offense = await Offense.create({
+      policeThatIssuedOffenseID: req.police.policeMongoID,
+      imageEvidence: imageEvidence,
+      offenseType: offenseType,
+      policeThatIssuedOffenseBadgenumber: police.badgenumber,
+      carPlate: carPlate,
+      resolvedOrNot: false,
+      resolvedDateTime: null,
+      notes: notes
+    })
+    res.status(StatusCodes.CREATED).json({receipt: offense})
 }
 
 module.exports = {getImages,createOffense,uploadImage}
