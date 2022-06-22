@@ -85,7 +85,6 @@ const showMe = async (req,res) => {
 }
 
 const updateStaffNotPassword = async (req,res) => { 
-    checkPermissions(req.police, req.params.id)
     const police = await Police.findOne({_id:req.params.id})
     police.role = req.body.role
     police.badgenumber = req.body.badgenumber
