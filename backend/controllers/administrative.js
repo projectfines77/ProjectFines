@@ -84,12 +84,17 @@ const showMe = async (req,res) => {
     res.status(StatusCodes.OK).json(message);
 }
 
-const updateStaffNotPassword = async (req,res) => {
+const updateStaffNotPassword = async (req,res) => { 
     checkPermissions(req.police, req.params.id)
     const police = await Police.findOne({_id:req.params.id})
     police.role = req.body.role
     police.badgenumber = req.body.badgenumber
     await police.save()
+    const updateOffenseModel = await Offense.find({policeThatIssuedOffenseID:req.params.id})
+    for (const police of updateOffenseModel){
+        police.policeThatIssuedOffenseBadgenumber = req.body.badgenumber
+        await police.save()
+    }
     const newToken = createPayload(police)
     const existingToken = await Token.findOne({ policeMongoID: police._id });
     attachCookiesToResponse({res,police: newToken, refreshToken: existingToken.refreshToken})
