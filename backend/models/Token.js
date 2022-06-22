@@ -9,11 +9,14 @@ const TokenSchema = new mongoose.Schema(
     policeMongoID: {
       type: mongoose.Types.ObjectId,
       ref: 'Police',
-      required: true,
     },
-    //repetition for authenticating an admin use
+    policeMongoID: {
+      type: mongoose.Types.ObjectId,
+      ref: 'User',
+    },
     role: {
-      type:String
+      type:String,
+      default:'police'
     }
   },
   { timestamps: true }

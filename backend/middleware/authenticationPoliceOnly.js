@@ -1,8 +1,8 @@
 const CustomError = require('../errors');
 const Token = require('../models/Token');
-const { attachCookiesToResponse,validateAndDecipherToken } = require('../utils');
+const { attachCookiesToResponsePolice, validateAndDecipherToken } = require('../utils');
 
-const authenticateUser = async (req, res, next) => {
+const authenticatePolice = async (req, res, next) => {
   const { refreshToken, accessToken } = req.signedCookies;
   try {
     if (accessToken) {
@@ -21,7 +21,7 @@ const authenticateUser = async (req, res, next) => {
       throw new CustomError.UnauthenticatedError('Authentication Invalid');
     }
 
-    attachCookiesToResponse({
+    attachCookiesToResponsePolice({
       res,
       police: req.police,
       refreshToken: existingToken.refreshToken,
@@ -45,6 +45,6 @@ const quickPermissionsCheck = (...roles) => {
 };
 
 module.exports = {
-  authenticateUser,
+  authenticatePolice,
   quickPermissionsCheck,
 };

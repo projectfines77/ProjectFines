@@ -1,18 +1,18 @@
-const {login,register,loginHistory,showAllStaff,showMe,showOneStaff,updateStaffNotPassword, updateStaffPassword, logout,showMyTicketingHistory,showStaffTicketingHistory} = require('../controllers/administrative')
+const { login, register, loginHistory, showAllStaff, showMe, showOneStaff, updateStaffNotPassword, updateStaffPassword, logout, showMyTicketingHistory, showStaffTicketingHistory } = require('../controllers/administrative')
 const express = require('express')
 const router = express.Router()
-const { quickPermissionsCheck,authenticateUser } = require('../middleware/authentication');
+const { quickPermissionsCheck, authenticatePolice } = require('../middleware/authenticationPoliceOnly');
 
 router.post('/register', register)
 router.post('/login', login)
-router.get('/loginHistory',authenticateUser, loginHistory)
-router.get('/showAllStaff',authenticateUser,quickPermissionsCheck('admin'), showAllStaff)
-router.get('/showMe',authenticateUser, showMe )
-router.get('/showOneStaff/:id', authenticateUser, showOneStaff)
-router.patch('/updateStaffNotPassword/:id', authenticateUser,quickPermissionsCheck('admin'), updateStaffNotPassword)
-router.patch('/updateStaffPassword', authenticateUser, updateStaffPassword)
-router.delete('/logout', authenticateUser, logout)
-router.get('/showMyTicketingHistory',authenticateUser, showMyTicketingHistory )
-router.get('/showStaffTicketingHistory/:id',authenticateUser,quickPermissionsCheck('admin'), showStaffTicketingHistory )
+router.get('/loginHistory', authenticatePolice, loginHistory)
+router.get('/showAllStaff', authenticatePolice, quickPermissionsCheck('admin'), showAllStaff)
+router.get('/showMe', authenticatePolice, showMe)
+router.get('/showOneStaff/:id', authenticatePolice, showOneStaff)
+router.patch('/updateStaffNotPassword/:id', authenticatePolice, quickPermissionsCheck('admin'), updateStaffNotPassword)
+router.patch('/updateStaffPassword', authenticatePolice, updateStaffPassword)
+router.delete('/logout', authenticatePolice, logout)
+router.get('/showMyTicketingHistory', authenticatePolice, showMyTicketingHistory)
+router.get('/showStaffTicketingHistory/:id', authenticatePolice, quickPermissionsCheck('admin'), showStaffTicketingHistory)
 
 module.exports = router;

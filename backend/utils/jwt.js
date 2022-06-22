@@ -7,13 +7,35 @@ const createJWT = ({ payload }) => {
 
 const validateAndDecipherToken = (token) => jwt.verify(token, process.env.JWT_SECRET);
 
-const attachCookiesToResponse = ({ res, police, refreshToken }) => {
+const attachCookiesToResponsePolice = ({ res, police, refreshToken }) => {
   const accessTokenJWT = createJWT({ payload: { police } });
   const refreshTokenJWT = createJWT({ payload: { police, refreshToken } });
 
   const oneDay = 1000 * 60 * 60 * 24;
   const longerExp = 1000 * 60 * 60 * 24 * 30;
-  
+
+  res.cookie('accessToken', accessTokenJWT, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    signed: true,
+    expires: new Date(Date.now() + oneDay),
+  });
+
+  res.cookie('refreshToken', refreshTokenJWT, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    signed: true,
+    expires: new Date(Date.now() + longerExp),
+  });
+};
+
+const attachCookiesToResponseUser = ({ res, user, refreshToken }) => {
+  const accessTokenJWT = createJWT({ payload: { user } });
+  const refreshTokenJWT = createJWT({ payload: { user, refreshToken } });
+
+  const oneDay = 1000 * 60 * 60 * 24;
+  const longerExp = 1000 * 60 * 60 * 24 * 30;
+
   res.cookie('accessToken', accessTokenJWT, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -32,5 +54,6 @@ const attachCookiesToResponse = ({ res, police, refreshToken }) => {
 module.exports = {
   createJWT,
   validateAndDecipherToken,
-  attachCookiesToResponse,
+  attachCookiesToResponsePolice,
+  attachCookiesToResponseUser
 };
