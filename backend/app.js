@@ -30,6 +30,7 @@ app.use(fileUpload({ useTempFiles: true }));
 //import routers
 const administrative = require('./routers/policeRouter')
 const offense = require('./routers/offenseRouter')
+const user = require('./routers/userRouter')
 
 // middleware
 const notFoundMiddleware = require('./middleware/not-found');
@@ -55,6 +56,7 @@ app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
 
 //use routers
+app.use('/api/v1/user',user)
 app.use('/api/v1',offense)
 app.use('/',administrative)
 

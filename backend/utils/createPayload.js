@@ -2,8 +2,8 @@ const createPayloadPolice = (police) => {
   return { badgenumber: police.badgenumber, policeMongoID: police._id, role: police.role };
 };
 
-const createPayloadUser = (police) => {
-  return { badgenumber: police.badgenumber, policeMongoID: police._id, role: police.role };
+const createPayloadUser = (user) => {
+  return { name: user.name, userMongoID: user._id, role: user.role };
 };
 
 module.exports = {createPayloadUser,createPayloadPolice};

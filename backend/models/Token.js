@@ -10,7 +10,7 @@ const TokenSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: 'Police',
     },
-    policeMongoID: {
+    userMongoID: {
       type: mongoose.Types.ObjectId,
       ref: 'User',
     },
