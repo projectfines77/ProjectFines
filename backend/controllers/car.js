@@ -5,6 +5,7 @@ const { StatusCodes } = require('http-status-codes')
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 const Offense = require('../models/Offense')
+const {checkPermissions} = require('../utils')
 
 const addCar = async (req,res) => {
     const {userMongoID} = req.user
@@ -31,6 +32,7 @@ const uploadImageAddCar = async (req, res) => {
 
 const getCar = async (req,res) => {
     const car = await Car.findOne({_id:req.params.id})
+    checkPermissions(req.user, car.ownerMongoID)
     res.status(StatusCodes.OK).json(car)
 }
 
@@ -41,12 +43,15 @@ const getAllCars = async (req,res) => {
 }
 
 const updateCar = async (req,res) => {
-    const car = await Car.findOneAndUpdate({_id:req.params.id}, req.body, {new:true, runValidators:true})
-    res.status(StatusCodes.OK).json(car)
+    const car = await Car.findOne({_id:req.params.id})
+    checkPermissions(req.user, car.ownerMongoID)
+    const update = await Car.findOneAndUpdate({_id:req.params.id}, req.body, {new:true, runValidators:true})
+    res.status(StatusCodes.OK).json(update)
 }
 
 const deleteCar = async (req,res) => {
     const car = await Car.findOne({_id:req.params.id})
+    checkPermissions(req.user, car.ownerMongoID)
     if(car.offensesIncurred.length != 0){
         throw new CustomErrors.UnauthorizedError('You have outstanding bills. Pay before delete')
     }
@@ -54,8 +59,9 @@ const deleteCar = async (req,res) => {
     res.status(StatusCodes.OK).json('Deleted car')
 }
 
-const getAllOffenses = async (req,res) =>{
+const getAllOffenses = async (req,res) =>{//might have to also add a check to see if this car belongs to req.user.userMongoID
     const car = await Car.findOne({_id:req.params.id})
+    checkPermissions(req.user, car.ownerMongoID)
     let offenseArr = []
     for(const ids of car.offensesIncurred){
         const toAdd = await Offense.findOne({_id:ids})
@@ -65,18 +71,24 @@ const getAllOffenses = async (req,res) =>{
 }
 
 const getSingleOffense = async (req,res) =>{
-    const singleOffense = await Offense.findOne({_id:req.params.id})
     const car = await Car.findOne({ownerMongoID:req.user.userMongoID})
+    if(!car){
+        throw new CustomErrors.BadRequestError('You have no cars saved')
+    }
+    checkPermissions(req.user, car.ownerMongoID)
     let verified = false
+    let offenseID = 0
     for( const offense of car.offensesIncurred){
         if(req.params.id === offense.toString()){
             verified = true
+            offenseID = offense.toString()
             break
         }
     }
     if(!verified){
         throw new CustomErrors.UnauthorizedError('Account doesn\'t belong to you')
     }
+    const singleOffense = await Offense.findOne({_id:offenseID})
     res.status(StatusCodes.OK).json({offenses: singleOffense})
 }
 
