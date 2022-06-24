@@ -53,7 +53,7 @@ const showMe = async (req,res) => {
     const {userMongoID} = req.user
     const findMe = await User.findOne({_id:userMongoID})
     const message = {name: findMe.name, email: findMe.email}
-    res.status(StatusCodes.OK).json({message});
+    res.status(StatusCodes.OK).json({message, mongoID: userMongoID});
 }
 
 const updateAccount = async (req,res) => {
@@ -87,6 +87,10 @@ const updateAccount = async (req,res) => {
 
 const deleteAccount = async (req,res) => {
     const del = await User.findOne({_id:req.user.userMongoID})
+    const checkOutstandingFines = await Car.findOne(({ownerMongoID:req.user.userMongoID}))
+    if(checkOutstandingFines.offensesIncurred.length != 0){
+        throw new CustomErrors.UnauthorizedError('You have outstanding bills. Pay before delete')
+    }
     await Token.findOneAndDelete({ userMongoID: req.user.userMongoID });
     res.cookie('accessToken', 'deleteAccount', {
         httpOnly: true,

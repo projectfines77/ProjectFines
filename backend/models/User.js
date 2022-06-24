@@ -71,9 +71,9 @@ UserSchema.methods.comparePassword = async function (canditatePassword) {
     return isMatch;
 };
 
-//untested
-// UserSchema.pre('remove', async function (next) {
-//   await this.model('Car').deleteMany({ ownerMongoID: this._id });
-// });
+//Seems to work. More testing required
+UserSchema.pre('remove', async function (next) {
+  await this.model('Car').deleteMany({ ownerMongoID: this._id });
+});
   
 module.exports = mongoose.model('User', UserSchema);
