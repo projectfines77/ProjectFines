@@ -55,10 +55,13 @@ app.use(mongoSanitize());
 app.use(express.json());
 app.use(cookieParser([process.env.JWT_SECRET_POLICE,process.env.JWT_SECRET_USER]));
 
+app.get('/',(req,res) =>{
+  res.send('Home page')
+})
 //use routers
 app.use('/api/v1/user',user)
-app.use('/api/v1',offense)
-app.use('/',administrative)
+app.use('/api/v1/offense',offense)
+app.use('/api/v1/police',administrative)
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
