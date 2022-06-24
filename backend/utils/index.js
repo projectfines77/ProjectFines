@@ -1,5 +1,5 @@
-const { createJWT, validateAndDecipherTokenPolice, validateAndDecipherTokenUser, attachCookiesToResponsePolice, attachCookiesToResponseUser } = require('./jwt');
-const {createPayloadPolice,createPayloadUser} = require('./createPayload');
+const { createJWT,attachCookiesToResponseAdmin,validateAndDecipherTokenAdmin, validateAndDecipherTokenPolice, validateAndDecipherTokenUser, attachCookiesToResponsePolice, attachCookiesToResponseUser } = require('./jwt');
+const {createPayloadPolice,createPayloadUser,createPayloadAdmin} = require('./createPayload');
 const checkPermissions = require('./checkPermissions');
 const createHash = require('./createHash');
 
@@ -12,5 +12,8 @@ module.exports = {
   checkPermissions,
   createHash,
   attachCookiesToResponseUser,
-  createPayloadUser
+  createPayloadUser,
+  createPayloadAdmin,
+  attachCookiesToResponseAdmin,
+  validateAndDecipherTokenAdmin
 };

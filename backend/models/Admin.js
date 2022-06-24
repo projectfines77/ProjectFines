@@ -1,10 +1,10 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs');
 
-const PoliceSchema = new mongoose.Schema({
-    badgenumber:{
+const AdminSchema = new mongoose.Schema({
+    username:{
         type:String,
-        required: [true, 'Please provide a badge number'],
+        required: [true, 'Please provide a username'],
         unique:true
     },
     password:{
@@ -14,27 +14,19 @@ const PoliceSchema = new mongoose.Schema({
     },
     role:{
         type: String,
-        default:'police'
+        default:'admin'
     },
-    loginHistory:{
-        type: [Date]
-    },
-    ticketingHistory:{
-        type: [mongoose.Schema.ObjectID],
-        ref:'Offense',
-        default: []
-    }
 }, {timestamps:true})
 
-PoliceSchema.pre('save', async function () {
+AdminSchema.pre('save', async function () {
     if (!this.isModified('password')) return;
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
   });
   
-PoliceSchema.methods.comparePassword = async function (canditatePassword) {
+AdminSchema.methods.comparePassword = async function (canditatePassword) {
     const isMatch = await bcrypt.compare(canditatePassword, this.password);
     return isMatch;
 };
   
-  module.exports = mongoose.model('Police', PoliceSchema);
+  module.exports = mongoose.model('Admin', AdminSchema);

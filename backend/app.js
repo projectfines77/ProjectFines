@@ -28,8 +28,9 @@ cloudinary.config({
 app.use(fileUpload({ useTempFiles: true }));
 
 //import routers
-const administrative = require('./routers/policeRouter')
+const police = require('./routers/policeRouter')
 const offense = require('./routers/offenseRouter')
+const admin = require('./routers/adminRouter')
 const user = require('./routers/userRouter')
 const car = require('./routers/carRouter')
 
@@ -62,7 +63,8 @@ app.get('/',(req,res) =>{
 //use routers
 app.use('/api/v1/user',user)
 app.use('/api/v1/offense',offense)
-app.use('/api/v1/police',administrative)
+app.use('/api/v1/police',police)
+app.use('/api/v1/admin',admin)
 app.use('/api/v1/car',car)
 
 app.use(notFoundMiddleware);

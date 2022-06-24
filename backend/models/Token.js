@@ -14,9 +14,12 @@ const TokenSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: 'User',
     },
+    adminMongoID: {
+      type: mongoose.Types.ObjectId,
+      ref: 'Admin',
+    },
     role: {
       type:String,
-      default:'police'
     }
   },
   { timestamps: true }

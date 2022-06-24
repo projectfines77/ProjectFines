@@ -1,18 +1,15 @@
-const { login, register, loginHistory, showAllStaff, showMe, showOneStaff, updateStaffNotPassword, updateStaffPassword, logout, showMyTicketingHistory, showStaffTicketingHistory } = require('../controllers/administrative')
+const { login, register, loginHistory, showMe, updateStaffPassword, logout, showMyTicketingHistory} = require('../controllers/police')
 const express = require('express')
 const router = express.Router()
-const { quickPermissionsCheck, authenticatePolice } = require('../middleware/authenticationPoliceOnly');
+const { authenticatePolice,quickPermissionsCheck } = require('../middleware/authenticationPoliceOnly');
 
 router.post('/register', register)
 router.post('/login', login)
-router.get('/loginHistory', authenticatePolice, loginHistory)
-router.get('/showAllStaff', authenticatePolice, quickPermissionsCheck('admin'), showAllStaff)
-router.get('/showMe', authenticatePolice, showMe)
-router.get('/showOneStaff/:id', authenticatePolice, showOneStaff)
-router.patch('/updateStaffNotPassword/:id', authenticatePolice, quickPermissionsCheck('admin'), updateStaffNotPassword)
-router.patch('/updateStaffPassword', authenticatePolice, updateStaffPassword)
+router.get('/loginHistory', authenticatePolice, quickPermissionsCheck('police'), loginHistory)
+router.get('/showMe', authenticatePolice, quickPermissionsCheck('police'), showMe)
+router.patch('/updateStaffPassword', authenticatePolice, quickPermissionsCheck('police'), updateStaffPassword)
 router.delete('/logout', authenticatePolice, logout)
-router.get('/showMyTicketingHistory', authenticatePolice, showMyTicketingHistory)
-router.get('/showStaffTicketingHistory/:id', authenticatePolice, quickPermissionsCheck('admin'), showStaffTicketingHistory)
+router.get('/showMyTicketingHistory', authenticatePolice, quickPermissionsCheck('police'), showMyTicketingHistory)
+
 
 module.exports = router;

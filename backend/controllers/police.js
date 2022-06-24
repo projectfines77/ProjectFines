@@ -30,7 +30,7 @@ const login = async (req, res) => {
         refreshToken = crypto.randomBytes(40).toString('hex');
         const userAgent = req.headers['user-agent'];
         const ip = req.ip;
-        const userToken = { refreshToken, ip, userAgent, policeMongoID: findPolice._id, role: findPolice.role };
+        const userToken = { refreshToken, ip, userAgent, policeMongoID: findPolice._id, role: 'police' };
         await Token.create(userToken);
         const cookieToken = createPayloadPolice(findPolice)
         attachCookiesToResponsePolice({ res, police: cookieToken, refreshToken });
@@ -40,12 +40,12 @@ const login = async (req, res) => {
     res.status(StatusCodes.OK).json({ msg: `Login succesful` });
 }
 
-const register = async (req, res) => { //assumes "role" is selectable - not self written. 
-    const { badgenumber, role } = req.body
-    if (!badgenumber) {
-        throw new CustomErrors.BadRequestError(`Bad badgenumber`)
+const register = async (req, res) => { 
+    const { badgenumber, password } = req.body
+    if (!badgenumber || !password) {
+        throw new CustomErrors.BadRequestError(`Bad details supplied`)
     }
-    const tryFindingBadgeNumber = await Police.findOne({ badgenumber: badgenumber, role: role })
+    const tryFindingBadgeNumber = await Police.findOne({ badgenumber: badgenumber})
     if (tryFindingBadgeNumber) {
         throw new CustomErrors.BadRequestError(`Attempting to create duplicate account`)
     }
@@ -55,27 +55,11 @@ const register = async (req, res) => { //assumes "role" is selectable - not self
 }
 
 const loginHistory = async (req, res) => {
-    checkPermissions(req.police,req.body.badgenumber)
-    // if (req.police.badgenumber != req.body.badgenumber) {
-    //     throw new CustomErrors.UnauthorizedError(`Unauthenticated`)
-    // }
-    const { badgenumber } = req.body
-    const findPolice = await Police.findOne({ badgenumber: badgenumber })
+    const findPolice = await Police.findOne({ _id: req.police.policeMongoID })
     if (!findPolice) {
         throw new CustomErrors.NotFoundError(`Counldn't find account`)
     }
     res.status(StatusCodes.OK).json({ history: findPolice.loginHistory });
-}
-
-const showAllStaff = async (req, res) => {
-    const allStaff = await Police.find({})
-    res.status(StatusCodes.OK).json({ StaffList: allStaff });
-}
-
-const showOneStaff = async (req, res) => {
-    checkPermissions(req.police, req.params.id)
-    const staff = await Police.find({ _id: req.params.id })
-    res.status(StatusCodes.OK).json({ staff: staff });
 }
 
 const showMe = async (req, res) => {
@@ -83,22 +67,6 @@ const showMe = async (req, res) => {
     const findMe = await Police.findOne({ _id: policeMongoID })
     const message = { badgenumber: findMe.badgenumber, role: findMe.role, forDebugging: req.police }
     res.status(StatusCodes.OK).json(message);
-}
-
-const updateStaffNotPassword = async (req, res) => {
-    const police = await Police.findOne({ _id: req.params.id })
-    police.role = req.body.role
-    police.badgenumber = req.body.badgenumber
-    await police.save()
-    const updateOffenseModel = await Offense.find({ policeThatIssuedOffenseID: req.params.id })
-    for (const police of updateOffenseModel) {
-        police.policeThatIssuedOffenseBadgenumber = req.body.badgenumber
-        await police.save()
-    }
-    const newToken = createPayloadPolice(police)
-    const existingToken = await Token.findOne({ policeMongoID: police._id });
-    attachCookiesToResponsePolice({ res, police: newToken, refreshToken: existingToken.refreshToken })
-    res.status(StatusCodes.OK).json(police);
 }
 
 const updateStaffPassword = async (req, res) => {
@@ -128,16 +96,6 @@ const showMyTicketingHistory = async (req, res) => {
     res.status(StatusCodes.OK).json(history);
 }
 
-const showStaffTicketingHistory = async (req, res) => {
-    const police = await Police.findOne({ _id: req.params.id })
-    let history = []
-    for (const ticket of police.ticketingHistory) {
-        const offense = await Offense.findOne({ _id: ticket })
-        history.push(offense)
-    }
-    res.status(StatusCodes.OK).json(history);
-}
-
 const logout = async (req, res) => {
     await Token.findOneAndDelete({ policeMongoID: req.police.policeMongoID });
 
@@ -156,11 +114,8 @@ module.exports = {
     login,
     register,
     loginHistory,
-    showAllStaff,
-    showMe, showOneStaff,
-    updateStaffNotPassword,
+    showMe, 
     updateStaffPassword,
     logout,
     showMyTicketingHistory,
-    showStaffTicketingHistory
 }

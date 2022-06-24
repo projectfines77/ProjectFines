@@ -58,6 +58,10 @@ const UserSchema = new mongoose.Schema({
       paymentProfile:{
         type: [paymentProfile]
       },
+      role:{
+        type:String,
+        default:'user'
+      }
 }, {timestamps:true})
 
 UserSchema.pre('save', async function () {

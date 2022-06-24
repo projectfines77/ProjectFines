@@ -6,4 +6,8 @@ const createPayloadUser = (user) => {
   return { name: user.name, userMongoID: user._id, role: user.role };
 };
 
-module.exports = {createPayloadUser,createPayloadPolice};
+const createPayloadAdmin= (admin) => {
+  return { name: admin.username, adminMongoID: admin._id, role: admin.role };
+};
+
+module.exports = {createPayloadUser,createPayloadPolice,createPayloadAdmin};
