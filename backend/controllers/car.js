@@ -2,6 +2,8 @@ const Car = require('../models/Car')
 const User = require('../models/User')
 const CustomErrors = require('../errors')
 const { StatusCodes } = require('http-status-codes')
+const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
 const Offense = require('../models/Offense')
 
 const addCar = async (req,res) => {
@@ -13,6 +15,19 @@ const addCar = async (req,res) => {
     await addCar.save()
     res.status(StatusCodes.OK).json(newCar)
 }
+
+const uploadImageAddCar = async (req, res) => {
+    const result = await cloudinary.uploader.upload(
+      req.files.image.tempFilePath,
+      {
+        use_filename: true,
+        folder: 'cars',
+      }
+    );
+    //console.log(req.files.image.tempFilePath);
+    fs.unlinkSync(req.files.image.tempFilePath);
+    return res.status(StatusCodes.OK).json(result.secure_url);
+  };
 
 const getCar = async (req,res) => {
     const car = await Car.findOne({_id:req.params.id})
@@ -51,7 +66,18 @@ const getAllOffenses = async (req,res) =>{
 
 const getSingleOffense = async (req,res) =>{
     const singleOffense = await Offense.findOne({_id:req.params.id})
+    const car = await Car.findOne({ownerMongoID:req.user.userMongoID})
+    let verified = false
+    for( const offense of car.offensesIncurred){
+        if(req.params.id === offense.toString()){
+            verified = true
+            break
+        }
+    }
+    if(!verified){
+        throw new CustomErrors.UnauthorizedError('Account doesn\'t belong to you')
+    }
     res.status(StatusCodes.OK).json({offenses: singleOffense})
 }
 
-module.exports = {addCar,getAllCars, updateCar, deleteCar,getCar,getAllOffenses,getSingleOffense}
+module.exports = {addCar,getAllCars,uploadImageAddCar, updateCar, deleteCar,getCar,getAllOffenses,getSingleOffense}
