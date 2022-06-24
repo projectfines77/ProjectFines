@@ -50,7 +50,6 @@ const login = async (req,res) => {
 }
 
 const showMe = async (req,res) => {
-    console.log(req.user);
     const {userMongoID} = req.user
     const findMe = await User.findOne({_id:userMongoID})
     const message = {name: findMe.name, email: findMe.email}

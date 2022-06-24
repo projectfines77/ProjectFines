@@ -13,17 +13,16 @@ const authenticateUser = async (req, res, next) => {
         const payload = validateAndDecipherTokenUser(refreshToken);
 
         const existingToken = await Token.findOne({
-            user: payload.user.userID,
+            userMongoID: payload.user.userMongoID,
             refreshToken: payload.refreshToken,
         });
 
         if (!existingToken || !existingToken?.isValid) {
             throw new CustomError.UnauthenticatedError('Authentication Invalid');
         }
-
         attachCookiesToResponseUser({
             res,
-            user: req.user,
+            user: payload.user,
             refreshToken: existingToken.refreshToken,
         });
         req.user = payload.user;

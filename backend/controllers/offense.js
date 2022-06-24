@@ -24,7 +24,7 @@ const uploadImage = async (req, res) => {
       folder: 'offenses',
     }
   );
-  console.log(req.files.image.tempFilePath);
+  //console.log(req.files.image.tempFilePath);
   fs.unlinkSync(req.files.image.tempFilePath);
   return res.status(StatusCodes.OK).json(result.secure_url);
 };

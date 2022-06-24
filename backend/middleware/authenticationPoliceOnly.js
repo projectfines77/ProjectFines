@@ -11,9 +11,8 @@ const authenticatePolice = async (req, res, next) => {
       return next();
     }
     const payload = validateAndDecipherTokenPolice(refreshToken);
-
     const existingToken = await Token.findOne({//policeMongoID: payload.police.policeMongoID
-      police: payload.police.userID,
+      policeMongoID: payload.policeMongoID.userID,
       refreshToken: payload.refreshToken,
     });
 
@@ -23,7 +22,7 @@ const authenticatePolice = async (req, res, next) => {
 
     attachCookiesToResponsePolice({
       res,
-      police: req.police,
+      police: payload.police,
       refreshToken: existingToken.refreshToken,
     });
     req.police = payload.police;
