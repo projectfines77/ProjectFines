@@ -1,16 +1,16 @@
 const CustomError = require('../errors');
 const Token = require('../models/Token');
-const { attachCookiesToResponseUser, validateAndDecipherToken } = require('../utils');
+const { attachCookiesToResponseUser, validateAndDecipherTokenUser } = require('../utils');
 
 const authenticateUser = async (req, res, next) => {
     const { refreshToken, accessToken } = req.signedCookies;
     try {
         if (accessToken) {
-            const payload = validateAndDecipherToken(accessToken);
+            const payload = validateAndDecipherTokenUser(accessToken);
             req.user = payload.user;
             return next();
         }
-        const payload = validateAndDecipherToken(refreshToken);
+        const payload = validateAndDecipherTokenUser(refreshToken);
 
         const existingToken = await Token.findOne({
             user: payload.user.userID,

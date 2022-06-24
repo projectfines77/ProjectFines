@@ -1,11 +1,19 @@
 const jwt = require('jsonwebtoken');
 
 const createJWT = ({ payload }) => {
-  const token = jwt.sign(payload, process.env.JWT_SECRET);
-  return token;
+  if(payload.user){
+    const token = jwt.sign(payload, process.env.JWT_SECRET_USER);
+    return token;
+  }
+  if(payload.police){
+    const token = jwt.sign(payload, process.env.JWT_SECRET_POLICE);
+    return token;
+  }
 };
 
-const validateAndDecipherToken = (token) => jwt.verify(token, process.env.JWT_SECRET);
+const validateAndDecipherTokenPolice = (token) =>  jwt.verify(token, process.env.JWT_SECRET_POLICE);
+
+const validateAndDecipherTokenUser = (token) => jwt.verify(token, process.env.JWT_SECRET_USER);
 
 const attachCookiesToResponsePolice = ({ res, police, refreshToken }) => {
   const accessTokenJWT = createJWT({ payload: { police } });
@@ -53,7 +61,8 @@ const attachCookiesToResponseUser = ({ res, user, refreshToken }) => {
 
 module.exports = {
   createJWT,
-  validateAndDecipherToken,
+  validateAndDecipherTokenPolice,
+  validateAndDecipherTokenUser,
   attachCookiesToResponsePolice,
   attachCookiesToResponseUser
 };

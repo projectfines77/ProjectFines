@@ -1,18 +1,18 @@
 const CustomError = require('../errors');
 const Token = require('../models/Token');
-const { attachCookiesToResponsePolice, validateAndDecipherToken } = require('../utils');
+const { attachCookiesToResponsePolice, validateAndDecipherTokenPolice } = require('../utils');
 
 const authenticatePolice = async (req, res, next) => {
   const { refreshToken, accessToken } = req.signedCookies;
   try {
     if (accessToken) {
-      const payload = validateAndDecipherToken(accessToken);
+      const payload = validateAndDecipherTokenPolice(accessToken);
       req.police = payload.police;
       return next();
     }
-    const payload = validateAndDecipherToken(refreshToken);
+    const payload = validateAndDecipherTokenPolice(refreshToken);
 
-    const existingToken = await Token.findOne({
+    const existingToken = await Token.findOne({//policeMongoID: payload.police.policeMongoID
       police: payload.police.userID,
       refreshToken: payload.refreshToken,
     });

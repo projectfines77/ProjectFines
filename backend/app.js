@@ -53,7 +53,7 @@ app.use(xss());
 app.use(mongoSanitize());
 
 app.use(express.json());
-app.use(cookieParser(process.env.JWT_SECRET));
+app.use(cookieParser([process.env.JWT_SECRET_POLICE,process.env.JWT_SECRET_USER]));
 
 //use routers
 app.use('/api/v1/user',user)
