@@ -31,6 +31,7 @@ app.use(fileUpload({ useTempFiles: true }));
 const administrative = require('./routers/policeRouter')
 const offense = require('./routers/offenseRouter')
 const user = require('./routers/userRouter')
+const car = require('./routers/carRouter')
 
 // middleware
 const notFoundMiddleware = require('./middleware/not-found');
@@ -62,6 +63,7 @@ app.get('/',(req,res) =>{
 app.use('/api/v1/user',user)
 app.use('/api/v1/offense',offense)
 app.use('/api/v1/police',administrative)
+app.use('/api/v1/car',car)
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

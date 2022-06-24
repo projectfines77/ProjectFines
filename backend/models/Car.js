@@ -19,13 +19,14 @@ const CarSchema = new mongoose.Schema({
         enum:['safe driving','liberty'],
         required:[true,'Please provide insurer name']
     },
-    // ownerID:{
-
-    // },
+    ownerMongoID:{
+        type:mongoose.Types.ObjectId,
+        ref: 'User',
+        required:true
+    },
     offensesIncurred:{
         type: [mongoose.Types.ObjectId],
         ref: 'Offense',
-        required: true,
     },
     imagesOfThisCar:{
         type:[String],

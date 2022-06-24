@@ -70,5 +70,10 @@ UserSchema.methods.comparePassword = async function (canditatePassword) {
     const isMatch = await bcrypt.compare(canditatePassword, this.password);
     return isMatch;
 };
+
+//untested
+// UserSchema.pre('remove', async function (next) {
+//   await this.model('Car').deleteMany({ ownerMongoID: this._id });
+// });
   
 module.exports = mongoose.model('User', UserSchema);
