@@ -32,6 +32,9 @@ const uploadImageAddCar = async (req, res) => {
 
 const getCar = async (req,res) => {
     const car = await Car.findOne({_id:req.params.id})
+    if(!car){
+        throw new CustomErrors.BadRequestError(`Car with id ${req.params.id} doesn't exist`)
+    }
     checkPermissions(req.user, car.ownerMongoID)
     res.status(StatusCodes.OK).json(car)
 }
@@ -39,11 +42,17 @@ const getCar = async (req,res) => {
 const getAllCars = async (req,res) => {
     const {userMongoID} = req.user
     const car = await Car.find({ownerMongoID:userMongoID})
+    if(!car){
+        throw new CustomErrors.BadRequestError('You have no cars saved')
+    }
     res.status(StatusCodes.OK).json(car)
 }
 
 const updateCar = async (req,res) => {
     const car = await Car.findOne({_id:req.params.id})
+    if(!car){
+        throw new CustomErrors.BadRequestError('You have no cars saved')
+    }
     checkPermissions(req.user, car.ownerMongoID)
     const update = await Car.findOneAndUpdate({_id:req.params.id}, req.body, {new:true, runValidators:true})
     res.status(StatusCodes.OK).json(update)
@@ -51,6 +60,9 @@ const updateCar = async (req,res) => {
 
 const deleteCar = async (req,res) => {
     const car = await Car.findOne({_id:req.params.id})
+    if(!car){
+        throw new CustomErrors.BadRequestError('You have no cars saved')
+    }
     checkPermissions(req.user, car.ownerMongoID)
     if(car.offensesIncurred.length != 0){
         throw new CustomErrors.UnauthorizedError('You have outstanding bills. Pay before delete')
@@ -61,6 +73,9 @@ const deleteCar = async (req,res) => {
 
 const getAllOffenses = async (req,res) =>{//might have to also add a check to see if this car belongs to req.user.userMongoID
     const car = await Car.findOne({_id:req.params.id})
+    if(!car){
+        throw new CustomErrors.BadRequestError('You have no cars saved')
+    }
     checkPermissions(req.user, car.ownerMongoID)
     let offenseArr = []
     for(const ids of car.offensesIncurred){

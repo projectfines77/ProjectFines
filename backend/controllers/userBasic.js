@@ -52,17 +52,19 @@ const login = async (req,res) => {
 const showMe = async (req,res) => {
     const {userMongoID} = req.user
     const findMe = await User.findOne({_id:userMongoID})
+    checkPermissions(req.user, findMe._id)
     const message = {name: findMe.name, email: findMe.email}
     res.status(StatusCodes.OK).json({message, mongoID: userMongoID});
 }
 
 const updateAccount = async (req,res) => {
     const {oldPassword, newPassword, email, name} = req.body
+    const { userMongoID } = req.user
+    const user = await User.findOne({ _id: userMongoID })
+    checkPermissions(req.user, user._id)
     if(oldPassword && !newPassword || newPassword && !oldPassword){
         throw new CustomErrors.BadRequestError('Please provide old and new passwords');
     }
-    const { userMongoID } = req.user
-    const user = await User.findOne({ _id: userMongoID })
     if(oldPassword && newPassword){
         const isPasswordCorrect = await user.comparePassword(oldPassword);
         if (!isPasswordCorrect) {
@@ -87,9 +89,12 @@ const updateAccount = async (req,res) => {
 
 const deleteAccount = async (req,res) => {
     const del = await User.findOne({_id:req.user.userMongoID})
-    const checkOutstandingFines = await Car.findOne(({ownerMongoID:req.user.userMongoID}))
-    if(checkOutstandingFines.offensesIncurred.length != 0){
-        throw new CustomErrors.UnauthorizedError('You have outstanding bills. Pay before delete')
+    checkPermissions(req.user, del._id)
+    const car = await Car.findOne(({ownerMongoID:req.user.userMongoID}))
+    if(car){
+        if(car.offensesIncurred.length != 0){
+            throw new CustomErrors.UnauthorizedError('You have outstanding bills. Pay before delete')
+        }
     }
     await Token.findOneAndDelete({ userMongoID: req.user.userMongoID });
     res.cookie('accessToken', 'deleteAccount', {
