@@ -51,6 +51,8 @@ const register = async (req, res) => {
     }
     const police = await Police.create(req.body)
     police.loginHistory = []
+    police.role = 'police'
+    await police.save()
     res.status(StatusCodes.CREATED).json({ msg: `Register succesful`, police: police });
 }
 
