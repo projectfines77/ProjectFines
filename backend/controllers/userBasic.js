@@ -5,6 +5,8 @@ const CustomErrors = require('../errors')
 const { StatusCodes } = require('http-status-codes')
 const crypto = require('crypto')
 const { attachCookiesToResponseUser, checkPermissions, createPayloadUser } = require('../utils')
+const { findOneAndUpdate } = require('../../../node-express-course/11-auth-workflow/final/server/models/Order')
+const { findOneAndDelete } = require('../models/User')
 
 const register = async (req,res) => {
     const {name,email, password} = req.body
@@ -109,6 +111,73 @@ const deleteAccount = async (req,res) => {
     res.status(StatusCodes.OK).json({ msg: `Delete succesful` });
 }
 
+const addPaymentProfile = async (req,res) => {
+    const user = await User.findOne({_id:req.user.userMongoID})
+    const {cardNumber, ccv, expiryMonth, expiryYear, nameOnCard, zipCode} = req.body
+    if(!cardNumber||! ccv||! expiryMonth||! expiryYear||! nameOnCard||! zipCode){
+        throw new CustomErrors.BadRequestError('Please fill in all fields')
+    }
+    const paymentProfile = {cardNumber: cardNumber, ccv:ccv, expiryMonth:expiryMonth, expiryYear:expiryYear, nameOnCard:nameOnCard, zipCode:zipCode}
+    if(user.paymentProfile.length != 0){
+        for(const profiles of user.paymentProfile){
+            if( profiles.cardNumber === cardNumber && profiles.ccv === ccv && profiles.expiryMonth === expiryMonth && profiles.expiryYear === expiryYear && profiles.nameOnCard === nameOnCard){
+                throw new CustomErrors.BadRequestError('This profile has already been created')
+            }
+        }
+    }
+    user.paymentProfile = [...user.paymentProfile, paymentProfile]
+    await user.save()
+    res.status(StatusCodes.CREATED).json({ msg: `Created profile`, profile: paymentProfile });
+}
+
+const showAllPaymentProfile = async (req,res) => {
+    const user = await User.findOne({_id:req.user.userMongoID})
+    if(!user){
+        throw new CustomErrors.UnauthenticatedError(`Not allowed access`)
+    }
+    res.status(StatusCodes.OK).json({ profiles: user.paymentProfile });
+}
+
+const updatePaymentProfile = async (req,res) => {
+    const user = await User.findOne({_id:req.user.userMongoID})
+    const {cardNumber, ccv, expiryMonth, expiryYear, nameOnCard, zipCode} = req.body
+    if(!cardNumber||! ccv||! expiryMonth||! expiryYear||! nameOnCard||! zipCode){
+        throw new CustomErrors.BadRequestError('Please fill in all fields')
+    }
+    if(!user){
+        throw new CustomErrors.UnauthenticatedError(`Not allowed access`)
+    }
+    const paymentProfile = {cardNumber: cardNumber, ccv:ccv, expiryMonth:expiryMonth, expiryYear:expiryYear, nameOnCard:nameOnCard, zipCode:zipCode}
+    if(user.paymentProfile.length != 0){
+        for(i = 0; i< user.paymentProfile.length; i++){
+            if(user.paymentProfile[i]._id.toString() === req.params.id){
+                user.paymentProfile.splice(i,1)
+                break
+            }
+        }
+    }
+    user.paymentProfile = [...user.paymentProfile, paymentProfile]
+    await user.save()
+    res.status(StatusCodes.OK).json({ msg: `Updated`});
+}
+
+const deletePaymentProfile = async (req,res) => {
+    const user = await User.findOne({_id:req.user.userMongoID})
+    if(!user){
+        throw new CustomErrors.UnauthenticatedError(`Not allowed access`)
+    }
+    if(user.paymentProfile.length != 0){
+        for(i = 0; i< user.paymentProfile.length; i++){
+            if(user.paymentProfile[i]._id.toString() === req.params.id){
+                user.paymentProfile.splice(i,1)
+                break
+            }
+        }
+    }
+    await user.save()
+    res.status(StatusCodes.OK).json({ msg: `Deleted`});
+}
+
 const logout = async (req,res) =>{
     await Token.findOneAndDelete({ userMongoID: req.user.userMongoID });
     res.cookie('accessToken', 'logout', {
@@ -122,4 +191,4 @@ const logout = async (req,res) =>{
     res.status(StatusCodes.OK).json({ msg: `Logout succesful` });
 }
 
-module.exports = {register,login,updateAccount,deleteAccount,showMe, logout}
+module.exports = {register,login,updateAccount,deleteAccount,showMe, logout, addPaymentProfile, showAllPaymentProfile, updatePaymentProfile, deletePaymentProfile}
