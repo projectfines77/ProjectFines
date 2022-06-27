@@ -136,6 +136,12 @@ const deleteUser = async (req, res) => {
     if (!user) {
         throw new CustomErrors.BadRequestError(`Unable to find user ${user}`)
     }
+    for (const car of user.cars) {
+        const found = await Car.findOne({ _id: car })
+        if (found.offensesIncurred.length != 0) {
+            throw new CustomErrors.UnauthorizedError(`User has outstanding bills to pay`)
+        }
+    }
     await Token.findOneAndDelete({ userMongoID: user._id });
     res.cookie('accessToken', 'logout', {
         httpOnly: true,
