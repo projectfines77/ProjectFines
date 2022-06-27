@@ -7,7 +7,7 @@ const Offense = require('../models/Offense')
 const CustomErrors = require('../errors')
 const { StatusCodes } = require('http-status-codes')
 const crypto = require('crypto')
-const { attachCookiesToResponseAdmin, checkPermissions, createPayloadAdmin} = require('../utils')
+const { attachCookiesToResponseAdmin, checkPermissions, createPayloadAdmin } = require('../utils')
 
 const login = async (req, res) => {
     const { username, password } = req.body
@@ -41,12 +41,12 @@ const login = async (req, res) => {
     res.status(StatusCodes.OK).json({ msg: `Login succesful` });
 }
 
-const register = async (req, res) => { //assumes "role" is selectable - not self written. 
+const register = async (req, res) => {
     const { username, password } = req.body
     if (!username || !password) {
         throw new CustomErrors.BadRequestError(`Bad details supplied`)
     }
-    const tryFindingusername = await Admin.findOne({ username: username})
+    const tryFindingusername = await Admin.findOne({ username: username })
     if (tryFindingusername) {
         throw new CustomErrors.BadRequestError(`Attempting to create duplicate account`)
     }
@@ -60,24 +60,83 @@ const showAllStaff = async (req, res) => {
 }
 
 const showOneStaff = async (req, res) => {
-    const staff = await Police.find({ _id: req.params.id })
-    res.status(StatusCodes.OK).json({ staff: staff });
+    const police = await Police.find({ badgenumber: req.params.id })
+    if (!police) {
+        throw new CustomErrors.BadRequestError(`Unable to find police ${police}`)
+    }
+    res.status(StatusCodes.OK).json({ staff: police });
 }
 
-const updateStaffNotPassword = async (req, res) => {
-    const police = await Police.findOne({ _id: req.params.id })
-    police.role = req.body.role
-    police.badgenumber = req.body.badgenumber
-    await police.save()
-    const updateOffenseModel = await Offense.find({ policeThatIssuedOffenseID: req.params.id })
-    // for (const police of updateOffenseModel) { //Not sure what this was for
-    //     police.policeThatIssuedOffenseBadgenumber = req.body.badgenumber
-    //     await police.save()
-    // }
-    updateOffenseModel.policeThatIssuedOffenseBadgeNumber = req.body.badgenumber
-    
-    //delete token from db
-    await Token.findOneAndDelete({ policeMongoID: req.police.policeMongoID });
+const showOneUser = async (req, res) => {
+    const user = await User.findOne({ email: req.params.email })
+    if (!user) {
+        throw new CustomErrors.BadRequestError(`Unable to find user ${user}`)
+    }
+    res.status(StatusCodes.OK).json({ user: user });
+}
+
+const updateStaff = async (req, res) => {
+    const police = await Police.findOne({ badgenumber: req.params.id })
+    if (!police) {
+        throw new CustomErrors.BadRequestError(`Unable to find police ${police}`)
+    }
+    if (req.body.newPassword) {
+        police.password = newPassword
+        await police.save();
+    }
+    if (req.body.role) {
+        police.role = req.body.role
+        await police.save()
+    }
+    res.status(StatusCodes.OK).json({ msg: 'Updated!', police });
+}
+
+const showStaffTicketingHistory = async (req, res) => {
+    const police = await Police.findOne({ badgenumber: req.params.id })
+    let history = []
+    for (const ticket of police.ticketingHistory) {
+        const offense = await Offense.findOne({ _id: ticket })
+        history.push(offense)
+    }
+    res.status(StatusCodes.OK).json({ history: history });
+}
+
+const updateUser = async (req, res) => {
+    const { newPassword, name, email } = req.body
+    const user = await User.findOne({ email: req.params.id })
+    if (!user) {
+        throw new CustomErrors.BadRequestError(`Unable to find user ${user}`)
+    }
+    if (newPassword) {
+        user.password = newPassword
+        await user.save();
+    }
+    if (name) {
+        user.name = name
+        await user.save();
+    }
+    if (email) {
+        user.email = email
+        await user.save()
+    }
+    await Token.findOneAndDelete({ userMongoID: user._id });
+    res.cookie('accessToken', 'deleteAccount', {
+        httpOnly: true,
+        expires: new Date(Date.now()),
+    });
+    res.cookie('refreshToken', 'deleteAccount', {
+        httpOnly: true,
+        expires: new Date(Date.now()),
+    });
+    res.status(StatusCodes.OK).json({ msg: 'Updated!' });
+}
+
+const deleteUser = async (req, res) => {
+    const user = await User.findOne({ email: req.params.email })
+    if (!user) {
+        throw new CustomErrors.BadRequestError(`Unable to find user ${user}`)
+    }
+    await Token.findOneAndDelete({ userMongoID: user._id });
     res.cookie('accessToken', 'logout', {
         httpOnly: true,
         expires: new Date(Date.now()),
@@ -86,17 +145,71 @@ const updateStaffNotPassword = async (req, res) => {
         httpOnly: true,
         expires: new Date(Date.now()),
     });
-    res.status(StatusCodes.OK).json({msg:'Updated!',police});
+    await user.remove()
+    res.status(StatusCodes.OK).json({ msg: 'Deleted!' });
 }
 
-const showStaffTicketingHistory = async (req, res) => {
-    const police = await Police.findOne({ _id: req.params.id })
-    let history = []
-    for (const ticket of police.ticketingHistory) {
-        const offense = await Offense.findOne({ _id: ticket })
-        history.push(offense)
+const getUserCars = async (req, res) => {
+    const user = await User.findOne({ email: req.params.email })
+    if (!user) {
+        throw new CustomErrors.BadRequestError(`Unable to find user ${user}`)
     }
-    res.status(StatusCodes.OK).json({history:history});
+    let cars = []
+    for (const car of user.cars) {
+        const findCar = await Car.findOne({ _id: car })
+        cars.push(findCar)
+    }
+    res.status(StatusCodes.OK).json({ cars: cars });
+}
+
+const getSpecificUserCar = async (req, res) => {
+    const user = await User.findOne({ email: req.params.email })
+    if (!user) {
+        throw new CustomErrors.BadRequestError(`Unable to find user ${user}`)
+    }
+    let cars = []
+    for (const car of user.cars) {
+        const findCar = await Car.findOne({ _id: car })
+        if (findCar.carPlate === req.params.carPlate) {
+            cars.push(findCar)
+            break
+        }
+    }
+    if (cars.length == 0) {
+        throw new CustomErrors.NotFoundError(`Unable to find car ${req.params.carPlate}`)
+    }
+    res.status(StatusCodes.OK).json({ cars: cars });
+}
+
+const getUserOffenses = async (req, res) => {
+    const user = await User.findOne({ email: req.params.email })
+    if (!user) {
+        throw new CustomErrors.BadRequestError(`Unable to find user ${user}`)
+    }
+    let offenses = []
+    let msg = 'Success'
+    if (req.params.type === 'all') {
+        for (const car of user.cars) {
+            const found = await Car.findOne({ _id: car })
+            for (const offenseID of found.offensesIncurred) {
+                const off = await Offense.findOne({ _id: offenseID.toString() })
+                offenses.push(off)
+            }
+            if (offenses.length() == 0) {
+                msg = `No cars registered for this user`
+            }
+        }
+    } else {
+        const found = await Car.findOne({ carPlate: req.params.type })
+        for (const offenseID of found.offensesIncurred) {
+            const off = await Offense.findOne({ _id: offenseID.toString() })
+            offenses.push(off)
+        }
+        if (offenses.length() == 0) {
+            msg = `Couldn't find car plate ${req.params.type}`
+        }
+    }
+    res.status(StatusCodes.OK).json({ msg: msg, offenses });
 }
 
 const logout = async (req, res) => {
@@ -118,7 +231,13 @@ module.exports = {
     login,
     showAllStaff,
     showOneStaff,
-    updateStaffNotPassword,
+    updateStaff,
     showStaffTicketingHistory,
-    logout
+    logout,
+    updateUser,
+    showOneUser,
+    getUserCars,
+    getSpecificUserCar,
+    getUserOffenses,
+    deleteUser
 }

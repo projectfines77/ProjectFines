@@ -40,12 +40,12 @@ const login = async (req, res) => {
     res.status(StatusCodes.OK).json({ msg: `Login succesful` });
 }
 
-const register = async (req, res) => { 
+const register = async (req, res) => {
     const { badgenumber, password } = req.body
     if (!badgenumber || !password) {
         throw new CustomErrors.BadRequestError(`Bad details supplied`)
     }
-    const tryFindingBadgeNumber = await Police.findOne({ badgenumber: badgenumber})
+    const tryFindingBadgeNumber = await Police.findOne({ badgenumber: badgenumber })
     if (tryFindingBadgeNumber) {
         throw new CustomErrors.BadRequestError(`Attempting to create duplicate account`)
     }
@@ -71,7 +71,7 @@ const showMe = async (req, res) => {
     res.status(StatusCodes.OK).json(message);
 }
 
-const updateStaffPassword = async (req, res) => {
+const updatePolicePassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body;
     if (!oldPassword || !newPassword) {
         throw new CustomErrors.BadRequestError('Please provide both values');
@@ -116,8 +116,8 @@ module.exports = {
     login,
     register,
     loginHistory,
-    showMe, 
-    updateStaffPassword,
+    showMe,
+    updatePolicePassword,
     logout,
     showMyTicketingHistory,
 }

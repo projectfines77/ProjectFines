@@ -2,7 +2,7 @@ const {addCar,getAllCars,uploadImageAddCar, updateCar, deleteCar,getCar,getAllOf
 const express = require('express')
 const router = express.Router()
 const { quickPermissionsCheckUser, authenticateUser } = require('../middleware/authenticationUserOnly');
-
+//quickPermissionsCheckUser('user'),
 router.post('/addCar', authenticateUser, addCar)
 router.get('/getSingleCar/:id', authenticateUser, getCar)
 router.get('/getCars', authenticateUser, getAllCars)
