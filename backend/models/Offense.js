@@ -12,7 +12,7 @@ const OffenseSchema = new mongoose.Schema({
     offenseType:{
         type:String,
         enum:['drunkDriving', 'speeding'],
-        default:'Not stated'
+        required: true,
     },
     policeThatIssuedOffenseBadgenumber: {
         type: String,

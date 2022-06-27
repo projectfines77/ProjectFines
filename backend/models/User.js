@@ -30,7 +30,23 @@ const paymentProfile = mongoose.Schema({
   }
 })
 
-paymentProfile.index({cardNumber:1, ccv:1, expiryMonth:1, expiryYear:1, nameOnCard:1},{ unique: true })
+const payments = mongoose.Schema({
+  offenseID: {
+    type: mongoose.Types.ObjectId,
+    ref: 'Offense',
+    required: true
+  },
+  paymentProfile: {
+    type: mongoose.Types.ObjectId,
+    required: true
+  },
+  amount: {
+    type: String,
+    required: true
+  }
+})
+
+paymentProfile.index({ cardNumber: 1, ccv: 1, expiryMonth: 1, expiryYear: 1, nameOnCard: 1 }, { unique: true })
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -64,9 +80,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'user'
   },
-  // paymentHistory:{
-  //   type:[]
-  // }
+  paymentHistory: {
+    type: [payments]
+  }
 }, { timestamps: true })
 
 UserSchema.pre('save', async function () {

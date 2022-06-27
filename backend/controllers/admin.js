@@ -206,12 +206,23 @@ const getUserOffenses = async (req, res) => {
             }
         }
     } else {
+        let validate = false
         const found = await Car.findOne({ carPlate: req.params.type })
+        for (const ids of user.cars) {
+            const compare = await Car.findOne({ _id: ids.toString() })
+            if (compare) {
+                validate = true
+                break
+            }
+        }
+        if (!validate) {
+            throw new CustomErrors.BadRequestError(`This car doesn't belong to user ${user.name}`)
+        }
         for (const offenseID of found.offensesIncurred) {
             const off = await Offense.findOne({ _id: offenseID.toString() })
             offenses.push(off)
         }
-        if (offenses.length() == 0) {
+        if (offenses.length == 0) {
             msg = `Couldn't find car plate ${req.params.type}`
         }
     }
