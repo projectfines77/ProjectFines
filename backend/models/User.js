@@ -46,8 +46,6 @@ const payments = mongoose.Schema({
   }
 })
 
-paymentProfile.index({ cardNumber: 1, ccv: 1, expiryMonth: 1, expiryYear: 1, nameOnCard: 1 }, { unique: true })
-
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -58,7 +56,9 @@ const UserSchema = new mongoose.Schema({
   email: {
     type: String,
     unique: true,
+    index:true,
     required: [true, 'Please provide email'],
+    sparse:true,
     validate: {
       validator: validator.isEmail,
       message: 'Please provide valid email',

@@ -61,12 +61,17 @@ const updateCar = async (req,res) => {
 const deleteCar = async (req,res) => {
     const car = await Car.findOne({_id:req.params.id})
     if(!car){
-        throw new CustomErrors.BadRequestError('You have no cars saved')
+        throw new CustomErrors.BadRequestError('This is not a car you own')
     }
     checkPermissions(req.user, car.ownerMongoID)
-    if(car.offensesIncurred.length != 0){
-        throw new CustomErrors.UnauthorizedError('You have outstanding bills. Pay before delete')
-    }
+    if (car.offensesIncurred.length != 0) {
+        for(const offense of car.offensesIncurred){
+            const check = await Offense.findOne({_id:offense})
+            if(check.resolvedOrNot === 'false'){
+                throw new CustomErrors.UnauthorizedError('You have outstanding bills. Pay before delete')
+            }
+        }
+    } 
     await car.remove()
     res.status(StatusCodes.OK).json('Deleted car')
 }

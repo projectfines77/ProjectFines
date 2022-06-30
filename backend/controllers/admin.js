@@ -137,9 +137,16 @@ const deleteUser = async (req, res) => {
         throw new CustomErrors.BadRequestError(`Unable to find user ${user}`)
     }
     for (const car of user.cars) {
-        const found = await Car.findOne({ _id: car })
-        if (found.offensesIncurred.length != 0) {
-            throw new CustomErrors.UnauthorizedError(`User has outstanding bills to pay`)
+        const carfound = await Car.findOne({ _id: car })
+        if (carfound) {
+            if (carfound.offensesIncurred.length != 0) {
+                for(const offense of carfound.offensesIncurred){
+                    const check = await Offense.findOne({_id:offense})
+                    if(check.resolvedOrNot === 'false'){
+                        throw new CustomErrors.UnauthorizedError('You have outstanding bills. Pay before delete')
+                    }
+                }
+            }
         }
     }
     await Token.findOneAndDelete({ userMongoID: user._id });

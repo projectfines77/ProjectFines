@@ -17,7 +17,7 @@ const register = async (req, res) => {
     if (tryFindingUser) {
         throw new CustomErrors.BadRequestError(`Attempting to create duplicate account`)
     }
-    const user = await User.create(req.body)
+    const user = await User.create({name:name, email:email, password:password})
     res.status(StatusCodes.CREATED).json({ msg: `Register succesful`, user: user });
 }
 
@@ -95,7 +95,12 @@ const deleteAccount = async (req, res) => {
     const car = await Car.findOne(({ ownerMongoID: req.user.userMongoID }))
     if (car) {
         if (car.offensesIncurred.length != 0) {
-            throw new CustomErrors.UnauthorizedError('You have outstanding bills. Pay before delete')
+            for(const offense of car.offensesIncurred){
+                const check = await Offense.findOne({_id:offense})
+                if(check.resolvedOrNot === 'false'){
+                    throw new CustomErrors.UnauthorizedError('You have outstanding bills. Pay before delete')
+                }
+            }
         }
     }
     await Token.findOneAndDelete({ userMongoID: req.user.userMongoID });
